@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration status="OFF" monitorInterval="600">
+
+    <!--日志级别：TRACE < DEBUG < INFO < WARN < ERROR < FATAL-->
+    <Properties>
+        <!-- 配置日志文件输出目录,此处为项目根目录下的logs文件夹 -->
+        <Property name="LOG_HOME">/logs/muTools</Property>
+        <property name="LOG_STYLE">[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %logger{50} - %msg %n %xEx</property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台只输出level及其以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_STYLE}"/>
+        </Console>
+
+        <RollingRandomAccessFile name="INFO" fileName="${LOG_HOME}/info/info.log" filePattern="${LOG_HOME}/info/info_%d{yyyy-MM-dd}_%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_STYLE}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20">
+                <Delete basePath="${LOG_HOME}/info/" maxDepth="2">
+                    <IfFileName glob="*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="ERROR" fileName="${LOG_HOME}/error/error.log" filePattern="${LOG_HOME}/error/error_%d{yyyy-MM-dd}_%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="FATAL" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_STYLE}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20">
+                <Delete basePath="${LOG_HOME}/error/" maxDepth="2">
+                    <IfFileName glob="*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="DEBUG" fileName="${LOG_HOME}/debug/debug.log" filePattern="${LOG_HOME}/debug/debug_%d{yyyy-MM-dd}_%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_STYLE}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20">
+                <Delete basePath="${LOG_HOME}/debug/" maxDepth="2">
+                    <IfFileName glob="*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="ALL" fileName="${LOG_HOME}/all/all.log" filePattern="${LOG_HOME}/all/all_%d{yyyy-MM-dd}_%i.log.gz">
+            <Filters>
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_STYLE}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20">
+                <Delete basePath="${LOG_HOME}/all/" maxDepth="2">
+                    <IfFileName glob="*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+        <!--配置异步写日志-->
+        <Async name="Async">
+            <AppenderRef ref="ALL"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <!--监控系统信息-->
+        <Logger name="org.springframework" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <logger name="org.mybatis" level="INFO">
+        </logger>
+        <!--监控连接池-->
+        <Logger name="com.alibaba" level="DEBUG" additivity="false">
+            <AppenderRef ref="Async"/>
+        </Logger>
+        <!-- druid配置 在DEBUG模式下打印SQL-->
+        <logger name="druid.sql.Statement" level="debug" additivity="false">
+            <appender-ref ref="Console"/>
+        </logger>
+        <!-- 这儿为trace表示什么都可以打印出来了,其他几个级别分别为：TRACE、DEBUG、INFO、WARN、ERROR和FATAL -->
+        <Root level="INFO">
+            <Appender-Ref ref="Console"/>
+            <Appender-Ref ref="INFO"/>
+            <Appender-Ref ref="ERROR"/>
+            <Appender-Ref ref="DEBUG"/>
+        </Root>
+    </Loggers>
+</Configuration>
